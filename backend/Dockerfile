@@ -11,12 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy only backend requirements and install for better cache usage
-COPY backend/requirements.txt .
+COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application code into /app/backend
-COPY backend/ .
+COPY . .
 
 # Create non-root user for security
 RUN useradd -m -u 1000 sentinel && \
