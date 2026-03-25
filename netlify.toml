@@ -1,6 +1,10 @@
 [build]
-  publish = "frontend"
+  base = "frontend"
+  publish = "."
   command = "echo 'Static site ready'"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 [[redirects]]
   from = "/api/*"
