@@ -43,14 +43,23 @@ async def analyze_text(request: TextAnalysisRequest):
         # Run analysis
         scores = analyzer.analyze(request.text)
         
+        # Map analyzer output to expected keys
+        ai_likelihood = scores.get("ai_generated", 0.0)
+        scam_intent = scores.get("scam_probability", 0.0)
+        risk_score_raw = scores.get("risk_score", 50)
+        
         # Generate explanations
         risk_score, explanations, action = explain_text_analysis(
-            ai_likelihood=scores["ai_likelihood"],
-            scam_intent=scores["scam_intent"],
-            urgency=scores["urgency"],
-            financial=scores["financial_request"],
-            impersonation=scores["impersonation"]
+            ai_likelihood=ai_likelihood,
+            scam_intent=scam_intent,
+            urgency=scam_intent * 0.5,
+            financial=scam_intent * 0.4,
+            impersonation=scam_intent * 0.3
         )
+        
+        # Use Gemini's risk score if available
+        if risk_score_raw:
+            risk_score = risk_score_raw
         
         # Build response
         return TextAnalysisResult(
@@ -60,11 +69,11 @@ async def analyze_text(request: TextAnalysisRequest):
             action=action,
             content_type="text",
             details=TextAnalysisDetails(
-                ai_likelihood=scores["ai_likelihood"],
-                scam_intent=scores["scam_intent"],
-                urgency_level=scores["urgency"],
-                financial_request=scores["financial_request"],
-                impersonation=scores["impersonation"]
+                ai_likelihood=ai_likelihood,
+                scam_intent=scam_intent,
+                urgency_level=scam_intent * 0.5,
+                financial_request=scam_intent * 0.4,
+                impersonation=scam_intent * 0.3
             )
         )
         
