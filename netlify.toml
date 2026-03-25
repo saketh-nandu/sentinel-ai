@@ -4,7 +4,7 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "https://sentinel-ai-backend.onrender.com/:splat"
+  to = "https://sentinel-ai-1-ddmj.onrender.com/:splat"
   status = 200
   force = true
 
