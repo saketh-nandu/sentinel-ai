@@ -69,7 +69,7 @@ class VideoAnalyzer:
             import numpy as np
             
             # Extract key frames
-            frames = self._extract_frames(file_path, num_frames=3)
+            frames = self._extract_frames(file_path, num_frames=1)
             
             if not frames:
                 raise Exception("Could not extract frames from video")
@@ -124,35 +124,50 @@ Be thorough and mention specific frame issues if found."""
             
             confidence_decimal = confidence / 100.0
             
+            # Get video duration
+            cap_info = cv2.VideoCapture(str(file_path))
+            fps = cap_info.get(cv2.CAP_PROP_FPS) or 1
+            total_frames = int(cap_info.get(cv2.CAP_PROP_FRAME_COUNT))
+            duration = total_frames / fps
+            cap_info.release()
+
             if "DEEPFAKE" in verdict.upper():
                 return {
                     "real_probability": 1.0 - confidence_decimal,
-                    "deepfake_probability": confidence_decimal * 0.9,
+                    "deepfake_likelihood": confidence_decimal * 0.9,
                     "manipulated": confidence_decimal * 0.1,
-                    "reasoning": reasoning
+                    "reasoning": reasoning,
+                    "frames_analyzed": len(frames),
+                    "duration_seconds": duration
                 }
             elif "MANIPULATED" in verdict.upper() or "EDITED" in verdict.upper():
                 return {
                     "real_probability": 1.0 - confidence_decimal,
-                    "deepfake_probability": confidence_decimal * 0.4,
+                    "deepfake_likelihood": confidence_decimal * 0.4,
                     "manipulated": confidence_decimal * 0.6,
-                    "reasoning": reasoning
+                    "reasoning": reasoning,
+                    "frames_analyzed": len(frames),
+                    "duration_seconds": duration
                 }
             else:  # Real
                 return {
                     "real_probability": confidence_decimal,
-                    "deepfake_probability": (1.0 - confidence_decimal) * 0.5,
+                    "deepfake_likelihood": (1.0 - confidence_decimal) * 0.5,
                     "manipulated": (1.0 - confidence_decimal) * 0.5,
-                    "reasoning": reasoning
+                    "reasoning": reasoning,
+                    "frames_analyzed": len(frames),
+                    "duration_seconds": duration
                 }
                 
         except Exception as e:
             print(f"Video analysis failed: {e}")
             return {
                 "real_probability": 0.5,
-                "deepfake_probability": 0.25,
+                "deepfake_likelihood": 0.25,
                 "manipulated": 0.25,
-                "reasoning": f"Analysis failed: {str(e)}"
+                "reasoning": f"Analysis failed: {str(e)}",
+                "frames_analyzed": 0,
+                "duration_seconds": 0.0
             }
 
 
