@@ -103,54 +103,67 @@ Be specific about audio and content indicators."""
                 risk_score = min(100, risk_score + 20)
                 reasoning += f" Low transcription confidence ({confidence:.2f}) suggests possible audio manipulation."
             
+            # Get audio duration
+            try:
+                import soundfile as sf
+                info = sf.info(str(file_path))
+                duration = info.duration
+            except:
+                duration = 0.0
+
             risk_decimal = risk_score / 100.0
-            
+
             if "DEEPFAKE" in verdict.upper() or "CLONED" in verdict.upper():
                 return {
-                    "real_probability": 1.0 - risk_decimal,
-                    "deepfake_probability": risk_decimal * 0.8,
-                    "scam_probability": risk_decimal * 0.2,
+                    "human_voice": 1.0 - risk_decimal,
+                    "tts_likelihood": risk_decimal * 0.3,
+                    "voice_cloning": risk_decimal * 0.7,
                     "reasoning": reasoning,
                     "transcription": text,
-                    "confidence": confidence
+                    "confidence": confidence,
+                    "duration_seconds": duration
                 }
             elif "SCAM" in verdict.upper():
                 return {
-                    "real_probability": 1.0 - risk_decimal,
-                    "deepfake_probability": risk_decimal * 0.3,
-                    "scam_probability": risk_decimal * 0.7,
+                    "human_voice": 1.0 - risk_decimal,
+                    "tts_likelihood": risk_decimal * 0.5,
+                    "voice_cloning": risk_decimal * 0.2,
                     "reasoning": reasoning,
                     "transcription": text,
-                    "confidence": confidence
+                    "confidence": confidence,
+                    "duration_seconds": duration
                 }
             elif "SUSPICIOUS" in verdict.upper():
                 return {
-                    "real_probability": 1.0 - risk_decimal,
-                    "deepfake_probability": risk_decimal * 0.5,
-                    "scam_probability": risk_decimal * 0.5,
+                    "human_voice": 1.0 - risk_decimal,
+                    "tts_likelihood": risk_decimal * 0.4,
+                    "voice_cloning": risk_decimal * 0.3,
                     "reasoning": reasoning,
                     "transcription": text,
-                    "confidence": confidence
+                    "confidence": confidence,
+                    "duration_seconds": duration
                 }
             else:  # Legitimate
                 return {
-                    "real_probability": 1.0 - risk_decimal,
-                    "deepfake_probability": risk_decimal * 0.5,
-                    "scam_probability": risk_decimal * 0.5,
+                    "human_voice": 1.0 - risk_decimal,
+                    "tts_likelihood": risk_decimal * 0.3,
+                    "voice_cloning": risk_decimal * 0.2,
                     "reasoning": reasoning,
                     "transcription": text,
-                    "confidence": confidence
+                    "confidence": confidence,
+                    "duration_seconds": duration
                 }
                 
         except Exception as e:
             print(f"Audio analysis failed: {e}")
             return {
-                "real_probability": 0.5,
-                "deepfake_probability": 0.25,
-                "scam_probability": 0.25,
+                "human_voice": 0.5,
+                "tts_likelihood": 0.25,
+                "voice_cloning": 0.25,
                 "reasoning": f"Analysis failed: {str(e)}",
                 "transcription": "",
-                "confidence": 0.0
+                "confidence": 0.0,
+                "duration_seconds": 0.0
             }
 
 

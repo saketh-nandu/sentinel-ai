@@ -48,17 +48,6 @@ def validate_file_type(file: UploadFile, expected_type: str) -> bool:
             detail=f"Invalid file type. Allowed extensions for {expected_type}: {allowed}"
         )
     
-    # Check MIME type if available
-    if file.content_type:
-        valid_mimes = MIME_TYPES.get(expected_type, set())
-        # Only reject if clearly wrong type (e.g. video uploaded as image)
-        content_type_prefix = file.content_type.split("/")[0]
-        if content_type_prefix != expected_type and content_type_prefix in ("image", "audio", "video"):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid content type for {expected_type}: {file.content_type}"
-            )
-    
     return True
 
 
